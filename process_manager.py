@@ -22,6 +22,7 @@ def get_window(pid:int):
             _, window_pid = win32process.GetWindowThreadProcessId(handle)
             if window_pid == pid:
                 result = handle
+                return handle
     win32gui.EnumWindows(callback, pid)
     return result
 
@@ -29,8 +30,8 @@ def jump(pid:int):
     try:
         handle = get_window(pid)
         if handle:
-            # win32gui.ShowWindow(handle, win32con.SW_RESTORE)
-            # win32gui.SetForegroundWindow(handle)
+            win32gui.ShowWindow(handle, win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(handle)
             # win32api.SendMessage(handle, win32con.WM_KEYDOWN, JUMP_KEY, 0)
             win32api.keybd_event(JUMP_KEY, 0, 0, 0)
 
@@ -42,8 +43,8 @@ def release(pid:int):
     try:
         handle = get_window(pid)
         if handle:
-            # win32gui.ShowWindow(handle, win32con.SW_RESTORE)
-            # win32gui.SetForegroundWindow(handle)
+            win32gui.ShowWindow(handle, win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(handle)
             # win32api.SendMessage(JUMP_KEY, 0, 2 ,0)
             # win32api.SendMessage(handle, win32con.WM_KEYUP, JUMP_KEY, 0)
             win32api.keybd_event(JUMP_KEY, 0, 2, 0)
