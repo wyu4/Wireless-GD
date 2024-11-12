@@ -8,8 +8,6 @@ looking_for_process = None
 pressing_down = False
 found_pid = 0
 
-print(f'\n\n-------------------------\nOpenCV Version: {cv.__version__}\n-------------------------\n')
-
 capture = cv.VideoCapture(0)
 
 if not capture.isOpened():
@@ -47,7 +45,7 @@ while True:
 
         _, thresholded = cv.threshold(
             cv.GaussianBlur(cv.cvtColor(img, cv.COLOR_BGR2GRAY), (35, 35), 0),
-            100,
+            110,
             255,
             cv.THRESH_BINARY_INV,
             cv.THRESH_OTSU
@@ -100,7 +98,7 @@ while True:
                 process_manager.release(found_pid)
                 pressing_down = False
         # cv.imshow('PROCESSING', cv.cvtColor(thresholded, cv.COLOR_RGB2RGBA))
-        cv.imshow('WIRELESS_GD', cv.cvtColor(img, cv.COLOR_RGB2RGBA))
+        cv.imshow("Input", cv.cvtColor(img, cv.COLOR_RGB2RGBA))
         if cv.waitKey(1) == ord('q'):
             break
     except KeyboardInterrupt:
@@ -108,4 +106,4 @@ while True:
 
 capture.release()
 cv.destroyAllWindows()
-print("Closed.\n")
+print("Quit.\n")
