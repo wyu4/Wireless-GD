@@ -98,7 +98,7 @@ while True:
                 process_manager.release(found_pid)
                 pressing_down = False
         # cv.imshow('PROCESSING', cv.cvtColor(thresholded, cv.COLOR_RGB2RGBA))
-        cv.imshow("Input", cv.cvtColor(img, cv.COLOR_RGB2RGBA))
+        cv.imshow("Geody", cv.cvtColor(img, cv.COLOR_RGB2RGBA))
         if cv.waitKey(1) == ord('q'):
             break
     except KeyboardInterrupt:
