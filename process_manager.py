@@ -16,6 +16,8 @@ def get_pid(name:str|None=PROCESS_NAME):
         return None
 
 def get_window(pid:int):
+    global result
+    result = None
     def callback(handle, pid):
         global result
         if win32gui.IsWindowVisible(handle) and win32gui.IsWindowEnabled(handle):
@@ -30,10 +32,10 @@ def jump(pid:int):
     try:
         handle = get_window(pid)
         if handle:
-            win32gui.ShowWindow(handle, win32con.SW_RESTORE)
-            win32gui.SetForegroundWindow(handle)
-            # win32api.SendMessage(handle, win32con.WM_KEYDOWN, JUMP_KEY, 0)
-            win32api.keybd_event(JUMP_KEY, 0, 0, 0)
+            # win32gui.ShowWindow(handle, win32con.SW_RESTORE)
+            # win32gui.SetForegroundWindow(handle)
+            win32api.SendMessage(handle, win32con.WM_KEYDOWN, JUMP_KEY, 0x00000001)
+            # win32api.keybd_event(JUMP_KEY, 0, 0, 0)
 
             print(f'Jump sent to {win32gui.GetWindowText(handle)}')
     except winErr:
@@ -43,11 +45,11 @@ def release(pid:int):
     try:
         handle = get_window(pid)
         if handle:
-            win32gui.ShowWindow(handle, win32con.SW_RESTORE)
-            win32gui.SetForegroundWindow(handle)
+            # win32gui.ShowWindow(handle, win32con.SW_RESTORE)
+            # win32gui.SetForegroundWindow(handle)
             # win32api.SendMessage(JUMP_KEY, 0, 2 ,0)
-            # win32api.SendMessage(handle, win32con.WM_KEYUP, JUMP_KEY, 0)
-            win32api.keybd_event(JUMP_KEY, 0, 2, 0)
+            win32api.SendMessage(handle, win32con.WM_KEYUP, JUMP_KEY, 0xC0000001)
+            # win32api.keybd_event(JUMP_KEY, 0, 2, 0)
 
             print(f'Release sent to {win32gui.GetWindowText(handle)}')
     except winErr:
