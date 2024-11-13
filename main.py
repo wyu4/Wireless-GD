@@ -58,18 +58,18 @@ while True:
         palm_area = 0
         fist_area = 0
 
-        for (x, y, w, h) in palms:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
-            cv2.putText(frame, 'Release', (x, y+h), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 0), 1)
-            palm_area = w*h
-            break
+        # for (x, y, w, h) in palms:
+        #     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
+        #     cv2.putText(frame, 'Release', (x, y+h), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 0), 1)
+        #     palm_area = w*h
+        #     break
 
-        for (x, y, w, h) in fist:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 1)
-            roi_frame = frame[y:y+h,x:x+w]
-            cv2.putText(frame, 'Jump', (x, y+h), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 0), 1)
-            fist_area = w*h
-            break
+        # for (x, y, w, h) in fist:
+        #     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 1)
+        #     roi_frame = frame[y:y+h,x:x+w]
+        #     cv2.putText(frame, 'Jump', (x, y+h), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 0), 1)
+        #     fist_area = w*h
+        #     break
 
         if hwnd:
             cv2.putText(frame, 'Connected to GD', (0, int(f_y*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1)
