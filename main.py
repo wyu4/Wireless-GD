@@ -100,7 +100,7 @@ while True:
 
         cTime = time.time()
         cv2.putText(frame, f'FPS:{int(1 / (cTime - pTime))}', (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-        cv2.imshow('Hands-Free Controller', frame)
+        cv2.imshow('Handcam', frame)
         pTime = cTime
         if cv2.waitKey(1) == ord('q'):
             raise KeyboardInterrupt()
