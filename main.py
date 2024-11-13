@@ -3,6 +3,7 @@ print('\n------------------------------------')
 print('Making imports...')
 import numpy as np
 import cv2
+import mediapipe as mp
 import colors as col
 import time
 from gd import GD
@@ -16,8 +17,15 @@ waiting_for_ret = False
 is_jumping = False
 pTime = 0
 
-palm_cascade = cv2.CascadeClassifier('data/rpalm.xml')
-fist_cascade = cv2.CascadeClassifier('data/fist.xml')
+print('Loading mediapipe...')
+mpHands = mp.solutions.hands
+hands = mpHands.Hands(static_image_mode=False,
+                      max_num_hands=1,
+                      min_detection_confidence=0.5,
+                      min_tracking_confidence=0.5)
+index_tip = 8
+thumb_tip = 4
+mpDraw = mp.solutions.drawing_utils
 
 print('------------------------------------')
 while True:
@@ -32,11 +40,10 @@ while True:
 
         ret, frame = cap.read()
 
-        f_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        f_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        frame = frame[int(f_h*.25):int(f_h*.75),int(f_w*.25):int(f_w*.75)]
-        f_w = frame.shape[1]
-        f_h = frame.shape[0]
+        raw_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        raw_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        frame = frame[int(raw_h*.25):int(raw_h*.75),int(raw_w*.25):int(raw_w*.75)]
+        h,w,c = frame.shape
 
         if not ret:
             if waiting_for_ret:
@@ -56,41 +63,41 @@ while True:
                 waiting_for_process = False
                 print(f'{col.OKGREEN}{client.PROCESS_NAME} found.{col.ENDC}')
 
-        grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        index_pose = (w, h)
+        thumb_pose = (w, h)
 
-        palms = palm_cascade.detectMultiScale(grayscale, 1.05, 2)
-        fist = fist_cascade.detectMultiScale(grayscale, 1.05, 1)
+        results = hands.process(frame)
+        if results.multi_hand_landmarks:
+            for handLms in results.multi_hand_landmarks:
+                lms = handLms.landmark
+                lmIndex = lms[index_tip]
+                lmThumb = lms[thumb_tip]
+                if lmIndex:
+                    index_pose = (int(lmIndex.x*w), int(lmIndex.y*h))
+                if lmThumb:
+                    thumb_pose = (int(lmThumb.x*w), int(lmThumb.y*h))
 
-        palm_area = 0
-        fist_area = 0
-
-        for (x, y, w, h) in palms:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 1)
-            cv2.putText(frame, 'Release', (x, y+h), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 0), 1)
-            palm_area = w*h
-            break
-
-        if palm_area <= 0:
-            for (x, y, w, h) in fist:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 1)
-                roi_frame = frame[y:y+h,x:x+w]
-                cv2.putText(frame, 'Jump', (x, y+h), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 0, 0), 1)
-                fist_area = w*h
-                break
+        line_col = (255, 255, 255)
 
         if hwnd:
-            cv2.putText(frame, 'Connected to GD', (0, int(f_h*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1)
-            if palm_area >= fist_area:
-                if is_jumping:
-                    is_jumping = False
-                    client.release(hwnd)
-            else:
+            cv2.putText(frame, 'Connected to GD', (0, int(h*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1)
+            if index_pose[1] > thumb_pose[1]:
                 if not is_jumping:
-                    is_jumping = True
                     client.jump(hwnd)
+                is_jumping = True
+                line_col = (0, 0, 255)
+            else:
+                if is_jumping:
+                    client.release(hwnd)
+                is_jumping = False
+                line_col = (0, 255, 0)
         else:
-            cv2.putText(frame, 'Not connected to GD', (0, int(f_h*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 1)
-        
+            cv2.putText(frame, 'Not connected to GD', (0, int(h*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 1)
+
+        cv2.circle(frame, index_pose, 3, (255, 255, 255), -1)
+        cv2.line(frame, index_pose, thumb_pose, line_col, 2)
+        cv2.line(frame, (index_pose[0]-(w//10), thumb_pose[1]), thumb_pose, (255, 255, 255), 1)
+
         cTime = time.time()
         cv2.putText(frame, f'FPS:{int(1 / (cTime - pTime))}', (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
         cv2.imshow('Hands-Free Controller', frame)
