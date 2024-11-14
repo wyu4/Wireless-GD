@@ -1,4 +1,5 @@
 /venv
 /conda
 /build
+/dist
 /__pycache__
