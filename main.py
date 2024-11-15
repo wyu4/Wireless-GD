@@ -14,6 +14,8 @@ waiting_for_process = False
 waiting_for_cap_open = False
 waiting_for_ret = False
 is_jumping = False
+is_moving_left = False
+is_moving_right = False
 pTime = 0
 
 print('Loading mediapipe...')
@@ -64,9 +66,9 @@ while True:
                 waiting_for_process = False
                 print(f'{col.OKGREEN}{client.PROCESS_NAME} found.{col.ENDC}')
 
-        index_pose = (w, h)
-        click_pose_left = (0, h*2)
-        click_pose_right = (w, h*2)
+        index_pose = (w//2, h)
+        click_pose_left = (w//2, h*2)
+        click_pose_right = (w//2, h*2)
 
         results = hands.process(frame)
         if results.multi_hand_landmarks:
@@ -85,28 +87,55 @@ while True:
                         click_pose_left = (int(lm_click_2.x*w), int(lm_click_2.y*h))
                         click_pose_right = (int(lm_click_1.x*w), int(lm_click_1.y*h))
                         
-        line_col = (255, 255, 255)
+        jump_line_col = (255, 255, 255)
+        left_line_col = (255, 255, 255)
+        right_line_col = (255, 255, 255)
+
+        left_x_limit = w//4
+        right_x_limit = (w//4*3)
 
         if hwnd:
-            
             cv2.putText(frame, 'Connected to GD', (0, int(h*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 1)
             if ((click_pose_left[0] - click_pose_right[0]) * (index_pose[1] - click_pose_right[1]) - (click_pose_left[1] - click_pose_right[1]) * (index_pose[0] - click_pose_right[0])) < 0:
                 if not is_jumping:
                     client.jump(hwnd)
                 is_jumping = True
-                line_col = (0, 0, 255)
+                jump_line_col = (0, 0, 255)
             else:
                 if is_jumping:
-                    client.release(hwnd)
+                    client.jump_release(hwnd)
                 is_jumping = False
-                line_col = (0, 255, 0)
+                jump_line_col = (0, 255, 0)
+
+            if index_pose[0] < left_x_limit or click_pose_left[0] < left_x_limit or click_pose_right[0] < left_x_limit:
+                if not is_moving_left:
+                    is_moving_left = True
+                    client.left(hwnd)
+                left_line_col = (0, 255, 0)
+            else:
+                if is_moving_left:
+                    is_moving_left = False
+                    client.left_release(hwnd)
+
+            if index_pose[0] > right_x_limit or click_pose_left[0] > right_x_limit or click_pose_right[0] > right_x_limit:
+                if not is_moving_right:
+                    is_moving_right = True
+                    client.right(hwnd)
+                right_line_col = (0, 255, 0)
+            else:
+                if is_moving_right:
+                    is_moving_right = False
+                    client.right_release(hwnd)
         else:
             cv2.putText(frame, 'Not connected to GD', (0, int(h*0.9)), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 1)
 
         cv2.circle(frame, index_pose, 3, (255, 255, 255), -1)
-        cv2.line(frame, index_pose, click_pose_left, line_col, 2)
-        cv2.line(frame, index_pose, click_pose_right, line_col, 2)
+        cv2.line(frame, index_pose, click_pose_left, jump_line_col, 2)
+        cv2.line(frame, index_pose, click_pose_right, jump_line_col, 2)
         cv2.line(frame, click_pose_left, click_pose_right, (255, 255, 255), 1)
+
+        cv2.line(frame, (left_x_limit, 0), (left_x_limit, h), left_line_col, 1)
+        cv2.line(frame, (right_x_limit, 0), (right_x_limit, h), right_line_col, 1)
 
         cTime = time.time()
         cv2.putText(frame, f'FPS:{int(1 / (cTime - pTime))}', (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)

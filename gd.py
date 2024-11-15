@@ -6,6 +6,8 @@ import win32process
 import colors as col
 
 class client:
+    L_PARAMS = [0x00000001, 0xC0000001]
+
     def __init__(self, name:str):
         self.name = name
 
@@ -35,20 +37,47 @@ class client:
     def get_window_name(self, hwnd:int|None) -> str:
         return win32gui.GetWindowText(hwnd) if hwnd is not None else win32gui.GetWindowText(self.get_first_window())
     
+    def keydown(self, hwnd:int|None, keycode:int|None=0x00) -> bool:
+        if hwnd:
+            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, keycode, self.L_PARAMS[0])
+            return True
+        return False
+
+    def keyup(self, hwnd:int|None, keycode:int|None=0x00) -> bool:
+        if hwnd:
+            win32api.SendMessage(hwnd, win32con.WM_KEYUP, keycode, self.L_PARAMS[1])
+            return True
+        return False
+    
 class GD(client):
     PROCESS_NAME = 'GeometryDash.exe'
+    LEFT_KEYCODE = 0x41
+    RIGHT_KEYCODE = 0x44
     JUMP_KEYCODE = 0x57
-    L_PARAMS = [0x00000001, 0xC0000001]
 
     def __init__(self):
         super().__init__(self.PROCESS_NAME)
 
     def jump(self, hwnd:int|None) -> None:
-        if hwnd:
-            win32api.SendMessage(hwnd, win32con.WM_KEYDOWN, self.JUMP_KEYCODE, self.L_PARAMS[0])
-            print(f'{col.OKCYAN}Jump sent to {super().get_window_name(hwnd)}{col.ENDC}')
+        if super().keydown(hwnd, self.JUMP_KEYCODE):
+            print(f'{col.OKCYAN}Jump sent to {hwnd}{col.ENDC}')
 
-    def release(self, hwnd:int|None) -> None:
-        if hwnd:
-            win32api.SendMessage(hwnd, win32con.WM_KEYUP, self.JUMP_KEYCODE, self.L_PARAMS[1])
-            print(f'{col.OKCYAN}Release sent to {super().get_window_name(hwnd)}{col.ENDC}')
+    def jump_release(self, hwnd:int|None) -> None:
+        if super().keyup(hwnd, self.JUMP_KEYCODE):
+            print(f'{col.OKCYAN}Jump release sent to {hwnd}{col.ENDC}')
+
+    def left(self, hwnd:int|None) -> None:
+        if super().keydown(hwnd, self.LEFT_KEYCODE):
+            print(f'{col.OKCYAN}Left sent to {hwnd}{col.ENDC}')
+
+    def left_release(self, hwnd:int|None) -> None:
+        if super().keyup(hwnd, self.LEFT_KEYCODE):
+            print(f'{col.OKCYAN}Left release sent to {hwnd}{col.ENDC}')
+
+    def right(self, hwnd:int|None) -> None:
+        if super().keydown(hwnd, self.RIGHT_KEYCODE):
+            print(f'{col.OKCYAN}Right sent to {hwnd}{col.ENDC}')
+
+    def right_release(self, hwnd:int|None) -> None:
+        if super().keyup(hwnd, self.RIGHT_KEYCODE):
+            print(f'{col.OKCYAN}Right release sent to {hwnd}{col.ENDC}')
