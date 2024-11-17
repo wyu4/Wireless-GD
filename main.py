@@ -45,7 +45,7 @@ while True:
 
         raw_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         raw_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        frame = frame[int(raw_h*.25):int(raw_h*.75),int(raw_w*.25):int(raw_w*.75)]
+        frame = cv2.flip(frame[int(raw_h*.25):int(raw_h*.75),int(raw_w*.25):int(raw_w*.75)], 1)
         h,w,c = frame.shape
 
         if not ret:
