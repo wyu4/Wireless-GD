@@ -70,7 +70,7 @@ while True:
         click_pose_left = (w//2, h*2)
         click_pose_right = (w//2, h*2)
 
-        results = hands.process(frame)
+        results = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if results.multi_hand_landmarks:
             for handLms in results.multi_hand_landmarks:
                 lms = handLms.landmark
